@@ -4,9 +4,11 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
-
+const cookieParser = require('cookie-parser');
 const sequelize = require('./data/connection/databaseConnection');
 const routes = require('./routes/index')
+const errorHandler = require('./middleware/errorHandler');
+
 const app = express();
 
 require('./data/models/user/profileModel')
@@ -18,7 +20,9 @@ app.use(express.json());
 app.use(morgan('combined'));
 app.use(cors());
 app.use(helmet());
+app.use(cookieParser());
 app.use('/api', routes);
+app.use(errorHandler);
 
 const startServer = async () => {
     try {

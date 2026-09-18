@@ -1,30 +1,16 @@
 const routes = require('express').Router();
-const { registerUser } = require('../../controllers/user/authController')
-routes.post('/register', registerUser);
+const auth = require('../../controllers/user/authController');
 
-routes.post('/login', (req, res) => {
-    // Handle user login logic here
-    res.send('User logged in successfully');
-}); 
+routes.post('/register', auth.registerUser);
 
-routes.post('/logout', (req, res) => {
-    // Handle user logout logic here
-    res.send('User logged out successfully');
-});
+routes.post('/login', auth.login); 
 
-routes.get('/email-verification', (req, res) => {
-    // Handle email verification logic here
-    res.send('Email verified successfully');
-});
+routes.post('/logout', ()=>{});
 
-routes.post('/password-reset', (req, res) => {
-    // Handle password reset logic here
-    res.send('Password reset link sent successfully');
-});
+routes.get('/email-verification', auth.verifyEmail);
 
-routes.post('/forget-password', (req, res) => {
-    // Handle password reset confirmation logic here
-    res.send('Password reset successfully');
-});
+routes.post('/password-reset', auth.resetPassword);
+
+routes.post('/forget-password', auth.forgetPassword);
 
 module.exports = routes;
