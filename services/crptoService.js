@@ -25,7 +25,7 @@ const hashPassword = async (password) => {
     })
 }
 
-const hashToken = async (token) => {
+const hashToken = (token) => {
     return crypto.createHash('sha256').update(token).digest('hex');
 }
 
