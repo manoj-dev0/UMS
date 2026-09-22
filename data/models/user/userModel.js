@@ -31,6 +31,10 @@ User.init(
             allowNull: false,
             defaultValue: false,
         },
+        role_id: {
+            type: DataTypes.UUID,
+            allowNull: false
+        },
         last_login: {
             type: DataTypes.DATE,
             allowNull: true,

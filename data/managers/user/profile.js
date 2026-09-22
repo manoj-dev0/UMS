@@ -14,7 +14,19 @@ const createProfileAsync = async (user, first_name, last_name, phone_number, dat
     });
 }
 
+const getProfileByUserIdAsync = async (user_id) => {
+    return await Profile.findOne({
+        where: {
+            user_id
+        }
+    });
+}
+
+const getAllProfilesAsync = async () => {
+    return await Profile.findAll();
+}
 module.exports = {
     createProfileAsync,
-
+    getProfileByUserIdAsync,
+    getAllProfilesAsync
 }

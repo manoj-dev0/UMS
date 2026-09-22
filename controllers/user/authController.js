@@ -20,6 +20,7 @@ const registerUser = async (req, res, next) => {
             first_name,
             last_name,
             phone_number,
+            role_id,
             date_of_birth,
             gender
         } = req.body;
@@ -41,6 +42,7 @@ const registerUser = async (req, res, next) => {
             const user = await userManager.createUserAsync(
                 email,
                 passwordHash,
+                role_id,
                 transaction
             );
 
@@ -55,7 +57,7 @@ const registerUser = async (req, res, next) => {
             );
 
             const token = await cryptoService.generateToken();
-
+            console.log(token);
             await tokenMangager.createTokenAsync(
                 user.id,
                 cryptoService.hashToken(token),
@@ -296,7 +298,7 @@ const login = async(req, res, next) => {
 
         res.cookie("refreshToken", refreshToken,{
             httpOnly: true,
-            secure: true,
+            secure: false,
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
@@ -545,7 +547,7 @@ const refresh = async (req, res, next) => {
 
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
-            secure: true,
+            secure: false,
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000
         });

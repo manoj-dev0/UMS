@@ -15,12 +15,17 @@ require('./data/models/user/profileModel')
 require('./data/models/user/sessionModel')
 require('./data/models/user/tokenModel')
 require('./data/models/user/userModel')
+require('./data/models/access/permissionModel')
+require('./data/models/access/roleModel')
+require('./data/models/access/rolePermissionModel')
+
 
 app.use(express.json());
-app.use(morgan('combined'));
+app.use(morgan('dev'));
 app.use(cors());
 app.use(helmet());
 app.use(cookieParser());
+
 app.use('/api', routes);
 app.use(errorHandler);
 
@@ -31,9 +36,7 @@ const startServer = async () => {
         console.log("Database connection established successfully.");
 
         await sequelize.sync()
-
         console.log("Database synchronized successfully.");
-
         app.listen(process.env.PORT, () => {
             console.log("Server is running on port 3000");
         });

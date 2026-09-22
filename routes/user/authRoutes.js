@@ -1,5 +1,6 @@
 const routes = require('express').Router();
 const auth = require('../../controllers/user/authController');
+const authenticate = require('../../middleware/authenticate');
 
 routes.post('/register', auth.registerUser);
 
@@ -13,7 +14,7 @@ routes.post('/forget-password', auth.forgetPassword);
 
 routes.post('/reset-password', auth.resetPassword);
 
-routes.post('/logout', auth.logout);
+routes.post('/logout', authenticate,auth.logout);
 
 routes.post('/refresh', auth.refresh)
 

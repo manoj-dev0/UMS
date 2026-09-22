@@ -1,14 +1,15 @@
 const User = require('../../models/user/userModel');
 const Profile = require('../../models/user/profileModel');
-
-
+const Role = require("../../models/access/roleModel");
+const RolePermission = require("../../models/access/rolePermissionModel");
+const Permission = require("../../models/access/permissionModel");
 const USER_STATUS = require('../../../lib/enums/userStatus');
-const { resetPassword } = require('../../../controllers/user/authController');
 
-const createUserAsync = async (email, hashPassword, transaction) => {
+const createUserAsync = async (email, hashPassword, role_id, transaction) => {
     return await User.create({
         email,
         password_hash: hashPassword,
+        role_id,
         status: USER_STATUS.ACTIVE,
         is_email_verified: false
     },
@@ -91,6 +92,30 @@ const UpdateUserPasswordAsync = async (id, password_hash, transaction) => {
             transaction
     })
 }
+
+const getUserWithRoleAndPermissions = async (user_id)=>{
+    return  User.findByPk(
+                user_id,
+                {
+                    include: [
+                        {
+                            model: Role,
+                            include: [
+                                {
+                                    model: RolePermission,
+                                    include: [
+                                        {
+                                            model: Permission
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            );
+}
+
 module.exports = {
     createUserAsync,
     updateUserAsync,
@@ -101,4 +126,5 @@ module.exports = {
     verifyEmailAsync,
     updateUserLoginAsync,
     UpdateUserPasswordAsync,
+    getUserWithRoleAndPermissions
 }
