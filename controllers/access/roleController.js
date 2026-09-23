@@ -33,9 +33,9 @@ const addRole = async (req, res, next) => {
 
 const addPermissionToRole = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const { roleid } = req.params;
         const { permissions } = req.body;
-        console.log(id);
+        console.log(roleid);
         if (!Array.isArray(permissions) || permissions.length === 0) {
             throw new appError(
                 "At least one permission is required",
@@ -44,7 +44,7 @@ const addPermissionToRole = async (req, res, next) => {
         }
 
         const role =
-            await roleManager.getRoleByIdAsync(id);
+            await roleManager.getRoleByIdAsync(roleid);
 
         if (!role) {
             throw new appError(
@@ -72,7 +72,7 @@ const addPermissionToRole = async (req, res, next) => {
             const existingPermission =
                 await rolePermissionManager
                     .getRolePermissionAsync(
-                        id,
+                        roleid,
                         permission.permission_id,
                         permission.scope
                     );
@@ -89,7 +89,7 @@ const addPermissionToRole = async (req, res, next) => {
         const rolePermissions =
             await rolePermissionManager
                 .createRolePermissionsAsync(
-                    id,
+                    roleid,
                     permissions
                 );
 

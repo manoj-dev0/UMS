@@ -351,7 +351,7 @@ const forgetPassword = async (req, res, next) => {
 
             return token;
         })
-        
+        console.log(token);
         await mailService.sendPasswordResetEmail(
             email, 
             user.Profile.first_name, 
@@ -456,7 +456,7 @@ const logout = async (req, res, next) => {
 
             if (session && !session.revoked_at) {
                 await sessionManager.revokeSessionAsync(
-                    session.id, req.body.device_id
+                    session.id
                 );
             }
         }

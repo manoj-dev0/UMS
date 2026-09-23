@@ -3,7 +3,9 @@ const routes = require('express').Router();
 const user = require('../../controllers/user/userController');
 const authenticate = require('../../middleware/authenticate');
 const authorize = require('../../middleware/authorize');
+const upload = require('../../middleware/uploadmiddleware');
 
+//create user 
 routes.post(
     "/",
     authenticate,
@@ -11,6 +13,15 @@ routes.post(
     user.addUser
 );
 
+//search users by name
+routes.get(
+    "/search",
+    authenticate,
+    authorize("users:read"),
+    user.searchUsers
+);
+
+//get all users profile
 routes.get(
     "/profiles",
     authenticate,
@@ -18,6 +29,15 @@ routes.get(
     user.getAllProfiles
 );
 
+//get current logged-in user profile
+routes.get(
+    "/profile",
+    authenticate,
+    authorize("profiles:read"),
+    user.getUserProfile
+);
+
+//get user profile by Id 
 routes.get(
     "/:id/profile",
     authenticate,
@@ -25,10 +45,53 @@ routes.get(
     user.getProfile
 );
 
-routes.get(
-    "/profile",
+//update another user's profile if allowed by permission
+routes.put(
+    "/:id/profile",
     authenticate,
-    user.getUserProfile
-)
+    authorize("profiles:update"),
+    user.updateUserProfileById
+);
+
+//update current user's profile
+routes.put(
+    '/profile',
+    authenticate,
+    authorize("profiles:update"),
+    user.updateUserProfile
+);
+
+//change password of another user if allowed by permission
+routes.put(
+    "/:id/change-password",
+    authenticate,
+    authorize("users:update"),
+    user.changePasswordById
+);
+
+//change password
+routes.put(
+    "/change-password",
+    authenticate,
+    authorize("users:update"),
+    user.changePassword
+);
+
+//Delete user
+routes.delete(
+    "/:id",
+    authenticate,
+    authorize("users:delete"),
+    user.deleteUser
+);
+
+//upload profile image
+routes.post(
+    "/profile/image",
+    authenticate,
+    authorize("profiles:update"),
+    upload.single('image'),
+    user.uploadProfileImage
+);
 
 module.exports = routes

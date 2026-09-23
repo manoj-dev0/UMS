@@ -24,17 +24,16 @@ const revokeAllSessionsAsync = async(user_id, transaction) =>{
     })
 }
 
-const revokeSessionAsync = async(user_id, device_id) => {
+const revokeSessionAsync = async(id) => {
     return await Session.update(
         {
             revoked_at: new Date()
         },
         {
             where: {
-                id: sessionId,
+                id,
                 revoked_at: null
-            },
-            transaction
+            }        
         }
     );
 }

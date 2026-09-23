@@ -16,8 +16,9 @@ const getRoleByNameAsync = async (name) =>{
         where: {
             name
         }
-    })
+    });
 }
+
 
 module.exports = {
     getRoleByIdAsync,

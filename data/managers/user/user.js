@@ -1,32 +1,85 @@
-const User = require('../../models/user/userModel');
-const Profile = require('../../models/user/profileModel');
+const User = require("../../models/user/userModel");
+const Profile = require("../../models/user/profileModel");
+
 const Role = require("../../models/access/roleModel");
 const RolePermission = require("../../models/access/rolePermissionModel");
 const Permission = require("../../models/access/permissionModel");
-const USER_STATUS = require('../../../lib/enums/userStatus');
 
-const createUserAsync = async (email, hashPassword, role_id, transaction) => {
-    return await User.create({
-        email,
-        password_hash: hashPassword,
-        role_id,
-        status: USER_STATUS.ACTIVE,
-        is_email_verified: false
-    },
-    {
-        transaction
-    })
-}
+const USER_STATUS = require("../../../lib/enums/userStatus");
 
-const updateUserAsync = async () => {
-    
-}
 
-const getUserListAsync = async() => {
-    return await User.findAll();
-}
+// =====================================================
+// CREATE USER
+// =====================================================
 
-const getUserByEmailAsync = async(email) => {
+const createUserAsync = async (
+    email,
+    hashPassword,
+    role_id,
+    transaction
+) => {
+
+    return await User.create(
+        {
+            email,
+            password_hash: hashPassword,
+            role_id,
+            status: USER_STATUS.ACTIVE,
+            is_email_verified: false
+        },
+        {
+            transaction
+        }
+    );
+};
+
+
+// =====================================================
+// UPDATE USER
+// =====================================================
+
+const updateUserAsync = async (
+    id,
+    userData,
+    transaction = null
+) => {
+
+    await User.update(
+        userData,
+        {
+            where: {
+                id
+            },
+            transaction
+        }
+    );
+
+    return await getUserByIdAsync(id);
+};
+
+
+// =====================================================
+// GET ALL USERS
+// =====================================================
+
+const getUserListAsync = async () => {
+
+    return await User.findAll({
+        include: [
+            {
+                model: Profile
+            }
+        ]
+    });
+};
+
+
+// =====================================================
+// GET USER BY EMAIL
+// =====================================================
+
+const getUserByEmailAsync = async (email, transaction = null) => {
+
     return await User.findOne({
         where: {
             email
@@ -39,23 +92,59 @@ const getUserByEmailAsync = async(email) => {
                     "last_name"
                 ]
             }
-        ]
-    })
-}
+        ],
+        transaction
+    });
+};
 
-const getUserByIdAsync = async (id) => {
-    return await User.findByPk(id);
-}
 
-const deleteUserAsync = async(id) => {
+// =====================================================
+// GET USER BY ID
+// =====================================================
+
+const getUserByIdAsync = async (id, transaction = null) => {
+
+    return await User.findByPk(
+        id,
+        {
+            include: [
+                {
+                    model: Profile
+                }
+            ],
+            transaction
+        }
+    );
+};
+
+
+// =====================================================
+// DELETE USER
+// =====================================================
+
+const deleteUserAsync = async (
+    id,
+    transaction = null
+) => {
+
     return await User.destroy({
         where: {
             id
-        }
-    })
-}
+        },
+        transaction
+    });
+};
 
-const verifyEmailAsync = async (id, transaction) => {
+
+// =====================================================
+// VERIFY EMAIL
+// =====================================================
+
+const verifyEmailAsync = async (
+    id,
+    transaction
+) => {
+
     return await User.update(
         {
             is_email_verified: true
@@ -69,20 +158,43 @@ const verifyEmailAsync = async (id, transaction) => {
     );
 };
 
-const updateUserLoginAsync = async(id, last_login, transaction) => {
-    return await User.update({
-        last_login
-    },
-    {
-        where: {
-            id
-        },
-        transaction
-    });
-}
 
-const UpdateUserPasswordAsync = async (id, password_hash, transaction) => {
-    return await User.update({
+// =====================================================
+// UPDATE LAST LOGIN
+// =====================================================
+
+const updateUserLoginAsync = async (
+    id,
+    last_login,
+    transaction
+) => {
+
+    return await User.update(
+        {
+            last_login
+        },
+        {
+            where: {
+                id
+            },
+            transaction
+        }
+    );
+};
+
+
+// =====================================================
+// UPDATE PASSWORD
+// =====================================================
+
+const updateUserPasswordAsync = async (
+    id,
+    password_hash,
+    transaction
+) => {
+
+    return await User.update(
+        {
             password_hash
         },
         {
@@ -90,31 +202,39 @@ const UpdateUserPasswordAsync = async (id, password_hash, transaction) => {
                 id
             },
             transaction
-    })
-}
+        }
+    );
+};
 
-const getUserWithRoleAndPermissions = async (user_id)=>{
-    return  User.findByPk(
-                user_id,
+
+// =====================================================
+// GET USER WITH ROLE & PERMISSIONS
+// =====================================================
+
+const getUserWithRoleAndPermissions = async (user_id) => {
+
+    return await User.findByPk(
+        user_id,
+        {
+            include: [
                 {
+                    model: Role,
                     include: [
                         {
-                            model: Role,
+                            model: RolePermission,
                             include: [
                                 {
-                                    model: RolePermission,
-                                    include: [
-                                        {
-                                            model: Permission
-                                        }
-                                    ]
+                                    model: Permission
                                 }
                             ]
                         }
                     ]
                 }
-            );
-}
+            ]
+        }
+    );
+};
+
 
 module.exports = {
     createUserAsync,
@@ -125,6 +245,6 @@ module.exports = {
     deleteUserAsync,
     verifyEmailAsync,
     updateUserLoginAsync,
-    UpdateUserPasswordAsync,
+    updateUserPasswordAsync,
     getUserWithRoleAndPermissions
-}
+};
