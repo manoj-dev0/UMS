@@ -53,6 +53,14 @@ routes.put(
     user.updateUserProfileById
 );
 
+//explicit route for allowed users to change another user's profile details by user_id
+routes.put(
+    "/:user_id/profile/details",
+    authenticate,
+    authorize("profiles:update"),
+    user.updateUserProfileById
+);
+
 //update current user's profile
 routes.put(
     '/profile',
@@ -77,6 +85,14 @@ routes.put(
     user.changePassword
 );
 
+//change user role
+routes.put(
+    "/:user_id/role",
+    authenticate,
+    authorize("users:update"),
+    user.changeUserRole
+);
+
 //Delete user
 routes.delete(
     "/:id",
@@ -92,6 +108,15 @@ routes.post(
     authorize("profiles:update"),
     upload.single('image'),
     user.uploadProfileImage
+);
+
+//upload another user's profile image if allowed by permission
+routes.post(
+    "/:user_id/profile/image",
+    authenticate,
+    authorize("profiles:update"),
+    upload.single('image'),
+    user.uploadProfileImageById
 );
 
 module.exports = routes
