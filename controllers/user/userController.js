@@ -6,9 +6,11 @@ const userManager = require('../../data/managers/user/user');
 const profileManager = require('../../data/managers/user/profile');
 const tokenMangager = require('../../data/managers/user/token');
 const roleManager = require('../../data/managers/access/role');
+const sessionManager = require('../../data/managers/user/session');
 
 const appError = require('../../lib/errors/appError');
 const TOKEN_TYPE = require('../../lib/enums/tokenType');
+const USER_STATUS = require('../../lib/enums/userStatus');
 
 const mailService = require('../../services/mailService');
 const cryptoService = require('../../services/crptoService');
@@ -355,7 +357,7 @@ const changeUserRole = async (req, res, next) => {
     try {
         const { user_id } = req.params;
         const { role_id } = req.body;
-
+        const { scope } = req.permission
         if (!user_id) {
             throw new appError("User ID is required", 400);
         }
@@ -366,6 +368,9 @@ const changeUserRole = async (req, res, next) => {
 
         if (String(req.user.userId) === String(user_id)) {
             throw new appError("You cannot change your own role", 403);
+        }
+        if(scope === "SELF"){
+            throw new appError("You do not have permission to perform this action", 403)
         }
 
         const user = await userManager.getUserByIdAsync(user_id);
@@ -390,6 +395,70 @@ const changeUserRole = async (req, res, next) => {
             data: {
                 user_id: updatedUser.id,
                 role_id: updatedUser.role_id
+            }
+        });
+
+    } catch (err) {
+        next(err);
+    }
+};
+
+const updateUserStatus = async (req, res, next) => {
+    try {
+        const { user_id } = req.params;
+        const { status } = req.body;
+        const { scope } = req.permission;
+
+        if (!user_id) {
+            throw new appError("User ID is required", 400);
+        }
+
+        if (!status) {
+            throw new appError("Status is required", 400);
+        }
+
+        if (scope !== "ALL") {
+            throw new appError("You must have ALL scope to change user status", 403);
+        }
+
+        if (String(req.user.userId) === String(user_id)) {
+            throw new appError("You cannot change your own status", 403);
+        }
+
+        const allowedStatuses = [USER_STATUS.ACTIVE, USER_STATUS.SUSPENDED];
+
+        if (!allowedStatuses.includes(status)) {
+            throw new appError("Status must be either ACTIVE or SUSPENDED", 400);
+        }
+
+        const user = await userManager.getUserByIdAsync(user_id);
+
+        if (!user) {
+            throw new appError("User not found", 404);
+        }
+
+        if (user.status === status) {
+            throw new appError(`User is already ${status}`, 400);
+        }
+
+        await sequelize.transaction(async (transaction) => {
+            await userManager.updateUserAsync(
+                user_id,
+                { status },
+                transaction
+            );
+
+            if (status === USER_STATUS.SUSPENDED) {
+                await sessionManager.revokeAllSessionsAsync(user_id, transaction);
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: `User status updated to ${status}`,
+            data: {
+                user_id,
+                status
             }
         });
 
@@ -550,10 +619,6 @@ const searchUsers = async (req, res, next) => {
             throw new appError("Permission denied", 403);
         }
 
-        if (scope !== "ALL") {
-            throw new appError("Invalid permission scope", 403);
-        }
-
         const profiles = await profileManager.searchProfilesByNameAsync(searchTerm);
 
         return res.status(200).json({
@@ -577,6 +642,7 @@ module.exports = {
     changePassword,
     changePasswordById,
     changeUserRole,
+    updateUserStatus,
     deleteUser,
     uploadProfileImage,
     uploadProfileImageById,

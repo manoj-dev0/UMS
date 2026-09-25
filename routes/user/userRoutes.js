@@ -85,6 +85,14 @@ routes.put(
     user.changeUserRole
 );
 
+//change user status (ACTIVE or SUSPENDED)
+routes.put(
+    "/:user_id/status",
+    authenticate,
+    authorize("users:update"),
+    user.updateUserStatus
+);
+
 //Delete user
 routes.delete(
     "/:id",
