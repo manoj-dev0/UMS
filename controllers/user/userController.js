@@ -317,34 +317,24 @@ const changePasswordById = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { scope } = req.permission;
-        const { current_password, new_password } = req.body;
+        const { new_password } = req.body;
 
-        if (scope === "SELF" && req.user.userId !== id) {
-            throw new appError("You do not have permission to update this user's password", 403);
+        if (scope !== "ALL") {
+            throw new appError("You must have ALL scope to change another user's password", 403);
+        }
+
+        if (String(req.user.userId) === String(id)) {
+            throw new appError("You cannot change your own password using this API", 403);
+        }
+
+        if (!new_password) {
+            throw new appError("New password is required", 400);
         }
 
         const user = await userManager.getUserByIdAsync(id);
 
         if (!user) {
             throw new appError("User not found", 404);
-        }
-
-        const isSelfUpdate = Number(req.user.userId) === Number(id);
-
-        if (isSelfUpdate) {
-            if (!current_password || !new_password) {
-                throw new appError("Current password and new password are required", 400);
-            }
-
-            const isValidPassword = await cryptoService.comparePassword(current_password, user.password_hash);
-
-            if (!isValidPassword) {
-                throw new appError("Current password is incorrect", 401);
-            }
-        } else {
-            if (!new_password) {
-                throw new appError("New password is required", 400);
-            }
         }
 
         const passwordHash = await cryptoService.hashPassword(new_password);
@@ -372,6 +362,10 @@ const changeUserRole = async (req, res, next) => {
 
         if (!role_id) {
             throw new appError("Role ID is required", 400);
+        }
+
+        if (String(req.user.userId) === String(user_id)) {
+            throw new appError("You cannot change your own role", 403);
         }
 
         const user = await userManager.getUserByIdAsync(user_id);
@@ -544,12 +538,23 @@ const uploadProfileImageById = async (req, res, next) => {
 const searchUsers = async (req, res, next) => {
     try {
         const { name } = req.query;
+        const { scope } = req.permission;
 
         if (!name || !String(name).trim()) {
             throw new appError("Name is required to search users", 400);
         }
 
-        const profiles = await profileManager.searchProfilesByNameAsync(String(name));
+        const searchTerm = String(name).trim();
+
+        if (scope === "SELF") {
+            throw new appError("Permission denied", 403);
+        }
+
+        if (scope !== "ALL") {
+            throw new appError("Invalid permission scope", 403);
+        }
+
+        const profiles = await profileManager.searchProfilesByNameAsync(searchTerm);
 
         return res.status(200).json({
             success: true,

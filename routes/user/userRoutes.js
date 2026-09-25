@@ -17,7 +17,7 @@ routes.post(
 routes.get(
     "/search",
     authenticate,
-    authorize("users:read"),
+    authorize("profile:read"),
     user.searchUsers
 );
 
@@ -48,14 +48,6 @@ routes.get(
 //update another user's profile if allowed by permission
 routes.put(
     "/:id/profile",
-    authenticate,
-    authorize("profiles:update"),
-    user.updateUserProfileById
-);
-
-//explicit route for allowed users to change another user's profile details by user_id
-routes.put(
-    "/:user_id/profile/details",
     authenticate,
     authorize("profiles:update"),
     user.updateUserProfileById
@@ -101,7 +93,7 @@ routes.delete(
     user.deleteUser
 );
 
-//upload profile image
+//update or change profile image (same purpose, different naming)
 routes.post(
     "/profile/image",
     authenticate,
@@ -110,7 +102,7 @@ routes.post(
     user.uploadProfileImage
 );
 
-//upload another user's profile image if allowed by permission
+//update or change another user's profile image if allowed by permission
 routes.post(
     "/:user_id/profile/image",
     authenticate,

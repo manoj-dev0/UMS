@@ -28,14 +28,14 @@ routes.post('/:roleid/permissions',
 //get permissions of a role
 routes.get('/:roleId/permissions',
     authenticate,
-    authorize("roles_permissions:read"),
+    authorize("roles_permission:read"),
     role.getRolePermissions
 )
 
 //Remove permission from role
 routes.delete('/:roleId/permissions/:permissionId',
     authenticate,
-    authorize("roles_permissions:delete"),
+    authorize("roles_permission:delete"),
     role.removePermission
 )
 
